@@ -1,0 +1,161 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class HauntedHouseGame extends JFrame implements ActionListener {
+
+    private JTextArea gameTextArea;
+    private JTextField inputField;
+    private JButton goButton, resetButton, helpButton, inspectButton, inventoryButton, quitButton;
+    private String currentRoom;
+    private boolean hasKey; // Tracks if the player has found the key
+
+    public HauntedHouseGame() {
+        // Set up the frame
+        setTitle("Haunted House Adventure");
+        setSize(600, 400);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Game area
+        gameTextArea = new JTextArea();
+        gameTextArea.setEditable(false);
+        gameTextArea.setFont(new Font("Serif", Font.PLAIN, 14));
+        add(new JScrollPane(gameTextArea), BorderLayout.CENTER);
+
+        // Input panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BorderLayout());
+        inputField = new JTextField();
+        inputPanel.add(inputField, BorderLayout.CENTER);
+
+        // Buttons
+        JPanel buttonPanel = new JPanel();
+        goButton = new JButton("Go");
+        resetButton = new JButton("Reset");
+        helpButton = new JButton("Help");
+        inspectButton = new JButton("Inspect");
+        inventoryButton = new JButton("Inventory");
+        quitButton = new JButton("Quit");
+
+        buttonPanel.add(goButton);
+        buttonPanel.add(resetButton);
+        buttonPanel.add(helpButton);
+        buttonPanel.add(inspectButton);
+        buttonPanel.add(inventoryButton);
+        buttonPanel.add(quitButton);
+
+        inputPanel.add(buttonPanel, BorderLayout.EAST);
+        add(inputPanel, BorderLayout.SOUTH);
+
+        // Add action listeners
+        goButton.addActionListener(this);
+        resetButton.addActionListener(this);
+        helpButton.addActionListener(this);
+        inspectButton.addActionListener(this);
+        inventoryButton.addActionListener(this);
+        quitButton.addActionListener(this);
+
+        // Initialize the game
+        initializeGame();
+    }
+
+    private void initializeGame() {
+        currentRoom = "entrance";
+        hasKey = false; // Reset key status
+        gameTextArea.setText("You find yourself at the entrance of a haunted house.\n" +
+                "Commands: north, south, east, west, look, help.\n" +
+                "Enter your command below and press 'Go'.");
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == goButton) {
+            processCommand(inputField.getText().toLowerCase().trim());
+            inputField.setText("");
+        } else if (e.getSource() == resetButton) {
+            initializeGame();
+        } else if (e.getSource() == helpButton) {
+            gameTextArea.append("\nHelp: Use commands like 'north', 'south', 'look', etc., to navigate.");
+        } else if (e.getSource() == inspectButton) {
+            gameTextArea.append("\nYou inspect the area closely. Use the 'look' command for details.");
+        } else if (e.getSource() == inventoryButton) {
+            if (hasKey) {
+                gameTextArea.append("\nInventory: You have a rusty key.");
+            } else {
+                gameTextArea.append("\nInventory: You have nothing.");
+            }
+        } else if (e.getSource() == quitButton) {
+            gameTextArea.append("\nYou decided to quit the game. Goodbye!");
+            System.exit(0); // Closes the game
+        }
+    }
+
+    private void processCommand(String command) {
+        switch (currentRoom) {
+            case "entrance":
+                if (command.equals("north")) {
+                    currentRoom = "living room";
+                    gameTextArea.append("\nYou walk into the living room. It feels cold and eerie.");
+                } else if (command.equals("look")) {
+                    gameTextArea.append("\nThe entrance is dark and unwelcoming. A faint light flickers inside.");
+                } else {
+                    gameTextArea.append("\nInvalid command. Try again.");
+                }
+                break;
+
+            case "living room":
+                if (command.equals("east")) {
+                    currentRoom = "kitchen";
+                    gameTextArea.append("\nYou enter the kitchen. A rotten smell fills the air.");
+                } else if (command.equals("look")) {
+                    if (hasKey) {
+                        gameTextArea.append("\nThe living room has old furniture and a door to the north. You can now unlock it.");
+                    } else {
+                        gameTextArea.append("\nThe living room has old furniture and a locked door to the north.");
+                    }
+                } else if (command.equals("north")) {
+                    if (hasKey) {
+                        gameTextArea.append("\nYou use the key to unlock the door and escape the haunted house. Congratulations, you win!");
+                        currentRoom = "exit"; // Prevent further movement
+                    } else {
+                        gameTextArea.append("\nThe door is locked. You need a key to open it.");
+                    }
+                } else {
+                    gameTextArea.append("\nInvalid command. Try again.");
+                }
+                break;
+
+            case "kitchen":
+                if (command.equals("look")) {
+                    if (!hasKey) {
+                        gameTextArea.append("\nYou search the kitchen and find a rusty key hidden in a drawer!");
+                        hasKey = true; // Player finds the key
+                    } else {
+                        gameTextArea.append("\nThe kitchen has nothing else of interest.");
+                    }
+                } else if (command.equals("west")) {
+                    currentRoom = "living room";
+                    gameTextArea.append("\nYou go back to the living room.");
+                } else {
+                    gameTextArea.append("\nInvalid command. Try again.");
+                }
+                break;
+
+            case "exit":
+                gameTextArea.append("\nYou have already escaped the haunted house. Restart the game to play again.");
+                break;
+
+            default:
+                gameTextArea.append("\nInvalid command. Try again.");
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            HauntedHouseGame game = new HauntedHouseGame();
+            game.setVisible(true);
+        });
+    }
+}
